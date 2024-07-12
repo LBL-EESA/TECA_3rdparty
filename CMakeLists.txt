@@ -17,6 +17,14 @@ set(TECA_DEPS_URL "https://sourceforge.net/projects/teca/files/TECA_deps"
 set(LIBXLSXWRITER_URL http://github.com/burlen/libxlsxwriter.git)
 set(SHAPELIB_URL https://github.com/OSGeo/shapelib.git)
 
+
+# set defaults for the compute capability and test cores
+set(CUDA_COMPUTE_CAPABILITY 80)
+set(TECA_TEST_CORES 8)
+message(STATUS "CUDA Compute Capability is ${CUDA_COMPUTE_CAPABILITY}")
+
+
+
 # The following versions of each library are installed by this script:
 set(MPICH_SOURCE mpich-3.3.1)
 set(OPENMPI_SOURCE openmpi-4.0.4)
@@ -63,10 +71,11 @@ get_package_version(${NUMPY_SOURCE} numpy NUMPY)
 get_package_version(${MPI4PY_SOURCE} mpi4py MPI4PY)
 set(MATPLOTLIB_VERSION 3.3.4)
 set(TCPYPI_VERSION 1.3.4)
-set(TORCH_VERSION 1.10.0)
-set(TORCHAUDIO_VERSION 0.10.0)
-set(TORCHVISION_VERSION 0.11.1)
-set(CUPY_VERSION cuda113)
+set(TORCH_VERSION 2.1.0)
+set(TORCHAUDIO_VERSION 2.1.0)
+set(TORCHVISION_VERSION 0.16.0)
+set(CUPY_VERSION cuda12x)
+set(PYTORCH_CUDA_VERSION cu121)
 
 # enable/disable each piece, all on by default
 option(ENABLE_CUDA "configures for use with CUDA" OFF)
@@ -584,7 +593,7 @@ if (ENABLE_PYTHON)
 
     if (ENABLE_PYTORCH)
         if (ENABLE_CUDA)
-            set(PYTORCH_DEV cu113)
+            set(PYTORCH_DEV ${PYTORCH_CUDA_VERSION})
         else()
             set(PYTORCH_DEV cpu)
         endif()
@@ -797,6 +806,8 @@ if (ENABLE_TECA)
         UPDATE_COMMAND ${TECA_UPDATE}
         CMAKE_COMMAND env ${env} ${CMAKE_COMMAND}
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+            -DTECA_CUDA_ARCHITECTURES=${CUDA_COMPUTE_CAPABILITY}
+            -DCMAKE_CUDA_ARCHITECTURES=${CUDA_COMPUTE_CAPABILITY}
             "-DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}"
             "-DCMAKE_C_FLAGS_DEBUG=${CMAKE_C_FLAGS}"
             "-DCMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS}"
@@ -810,6 +821,9 @@ if (ENABLE_TECA)
             -DBUILD_TESTING=${ENABLE_TECA_TEST}
             -DREQUIRE_CUDA=${ENABLE_CUDA}
             -DTECA_ENABLE_PROFILER=${ENABLE_TECA_PROFILER}
+            -DHAMR_LIBRARY_TYPE=SHARED
+            -DBUILD_SHARED_LIBS=ON
+            -DTECA_TEST_CORES=${TECA_TEST_CORES}
             ${PROJECT_BINARY_DIR}/TECA
         TEST_AFTER_INSTALL ${ENABLE_TECA_TEST}
         TEST_COMMAND env ${env} ctest ${CTEST_FLAGS} || true

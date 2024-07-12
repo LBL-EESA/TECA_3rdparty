@@ -36,7 +36,7 @@ export PKG_CONFIG_PATH=${CRAY_MPICH_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}
 # get the root of the install
 TECA_REV=`git ls-remote git@github.com:LBL-EESA/TECA.git | grep ${TECA_SOURCE} |  cut -c1-8`
 : ${TECA_PREFIX:=/global/common/software/m1517/teca/perlmutter_${PARTITION}}
-: ${PREFIX:=${TECA_PREFIX}/${TECA_SOURCE}-${TECA_REV}}
+: ${PREFIX:=${TECA_PREFIX}/${TECA_SOURCE}-${TECA_REV}-debug}
 
 # mark as dependency only
 if [[ "${ENABLE_TECA}" != "ON" ]]
@@ -114,14 +114,14 @@ cd ${BUILD_DIR}
 cmake \
   -DCMAKE_CXX_COMPILER=`which g++` \
   -DCMAKE_C_COMPILER=`which gcc` \
-  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_BUILD_TYPE=Debug \
   -DTECA_SOURCE=${TECA_SOURCE} \
   -DCMAKE_INSTALL_PREFIX=${PREFIX} \
   -DENABLE_CUDA=${ENABLE_CUDA} \
   -DENABLE_MPICH=OFF \
   -DENABLE_OPENMPI=OFF \
   -DENABLE_CRAY_MPICH=ON \
-  -DENABLE_TECA_TEST=OFF \
+  -DENABLE_TECA_TEST=ON \
   -DENABLE_TECA_DATA=ON \
   -DENABLE_PYTORCH=OFF \
   -DENABLE_TECA=${ENABLE_TECA} \
